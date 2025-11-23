@@ -1,0 +1,41 @@
+name: Test AI Review Action
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test Action Output
+        run: echo "AI Reviewer is now online! "
+      - name: Verify AI Review Action
+        uses: ./.github/actions/ai-review
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check AI Review Comment
+        run: |
+          COMMENTS=$(gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[].body')
+          echo "$COMMENTS" | grep "AI Review Summary"
+          if [ $? -eq 0 ]; then
+            echo "AI Review comment found."
+          else
+            echo "AI Review comment not found."
+            exit 1
+          fi
+      - name: Clean up AI Review Comment
+        run: |
+          COMMENT_ID=$(gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.body | contains("AI Review Summary")) | .id')
+          if [ -n "$COMMENT_ID" ]; then
+            gh api -X DELETE /repos/${{ github.repository }}/issues/comments/$COMMENT_ID
+            echo "AI Review comment deleted."
+          else
+            echo "No AI Review comment to delete."
+          fi
+      - name: Final Confirmation
+        run: echo "AI Review Action test completed successfully."
+        
