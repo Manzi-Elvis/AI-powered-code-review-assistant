@@ -1,15 +1,21 @@
-name: Test AI Review Action
+name: AI Review (Step 2)
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  test:
+  review:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Test Action Output
-        run: echo "AI Reviewer is now online! "
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Run reviewer script
+        run: node reviewer/review.js
