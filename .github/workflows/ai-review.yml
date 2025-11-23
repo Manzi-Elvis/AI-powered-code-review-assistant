@@ -1,4 +1,4 @@
-name: AI Review (Step 2)
+name: AI Review (Step 3 - Read Diff)
 
 on:
   pull_request:
@@ -17,5 +17,10 @@ jobs:
         with:
           node-version: "18"
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Run reviewer script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node reviewer/review.js
